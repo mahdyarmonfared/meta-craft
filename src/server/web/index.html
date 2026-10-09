@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MetaCraft — Social Share Preview Studio & Meta Tag Generator</title>
+  <meta name="description" content="Pixel-perfect live social preview simulator for Twitter, Facebook, LinkedIn, Google SERP, Discord and instant HTML/Next.js meta tag generator." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎴</text></svg>" />
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans selection:bg-sky-500 selection:text-white">
+
+  <!-- Header -->
+  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-sky-500/20">
+          <i data-lucide="layers" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="font-extrabold text-lg tracking-tight bg-gradient-to-r from-white via-slate-200 to-sky-400 bg-clip-text text-transparent">MetaCraft</span>
+            <span class="text-xs px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/20 font-mono font-medium">Port 3018</span>
+            <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">Day 18 / 30</span>
+          </div>
+          <p class="text-xs text-slate-400 hidden sm:block">Social Share Studio & Meta Tag Generator</p>
+        </div>
+      </div>
+
+      <!-- Presets & Audit Quick Bar -->
+      <div class="flex items-center space-x-3">
+        <div class="relative hidden md:block">
+          <select id="presetSelect" class="bg-slate-800 border border-slate-700 text-xs rounded-lg px-3 py-2 text-slate-200 focus:outline-none focus:border-sky-500 transition pr-8 cursor-pointer">
+            <option value="saas">✨ Preset: SaaS Platform</option>
+            <option value="blog">📝 Preset: Tech Blog Post</option>
+            <option value="portfolio">💼 Preset: Noir Portfolio</option>
+            <option value="opensource">⭐ Preset: GitHub Repo</option>
+          </select>
+        </div>
+
+        <button id="inspectUrlModalBtn" class="flex items-center space-x-1.5 text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-lg border border-slate-700 hover:border-slate-600 transition shadow-sm">
+          <i data-lucide="search" class="w-3.5 h-3.5 text-sky-400"></i>
+          <span>Inspect URL</span>
+        </button>
+
+        <a href="https://github.com/mahdyarmonfared/meta-craft" target="_blank" rel="noopener noreferrer" class="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition" title="GitHub Repository">
+          <i data-lucide="github" class="w-5 h-5"></i>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- URL Audit Modal -->
+  <div id="urlModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative">
+      <button id="closeUrlModal" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+      <div class="flex items-center space-x-3 mb-4">
+        <div class="w-9 h-9 rounded-lg bg-sky-500/10 text-sky-400 flex items-center justify-center">
+          <i data-lucide="globe" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h3 class="font-bold text-slate-100">Audit Live Website URL</h3>
+          <p class="text-xs text-slate-400">Extract Open Graph, Twitter cards, and SEO metatags</p>
+        </div>
+      </div>
+      <form id="urlScrapeForm" class="space-y-4">
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Target Website URL</label>
+          <div class="relative">
+            <input type="url" id="scrapeUrlInput" placeholder="https://example.com" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-sky-500" />
+          </div>
+        </div>
+        <div id="scrapeError" class="text-xs text-rose-400 hidden"></div>
+        <div class="flex justify-end space-x-2 pt-2">
+          <button type="button" id="cancelScrapeBtn" class="px-4 py-2 text-xs text-slate-300 hover:bg-slate-800 rounded-xl">Cancel</button>
+          <button type="submit" id="submitScrapeBtn" class="flex items-center space-x-2 px-4 py-2 text-xs font-semibold bg-sky-500 hover:bg-sky-400 text-white rounded-xl shadow-lg shadow-sky-500/20 transition">
+            <i data-lucide="scan" class="w-4 h-4"></i>
+            <span>Fetch & Extract</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Main Grid Workspace -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- Left Column: Form Editor & Audit Score (5 cols) -->
+    <div class="lg:col-span-5 space-y-6">
+
+      <!-- Audit Score Widget -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center space-x-2.5">
+            <div id="scoreRing" class="relative w-12 h-12 flex items-center justify-center">
+              <svg class="w-12 h-12 transform -rotate-90">
+                <circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="4" class="text-slate-800" fill="transparent" />
+                <circle id="scoreProgress" cx="24" cy="24" r="20" stroke="currentColor" stroke-width="4" class="text-emerald-500 transition-all duration-500" stroke-dasharray="125.6" stroke-dashoffset="0" fill="transparent" />
+              </svg>
+              <span id="scoreText" class="absolute text-xs font-black">95</span>
+            </div>
+            <div>
+              <div class="flex items-center space-x-2">
+                <h2 class="font-bold text-sm text-slate-100">SEO & Social Health</h2>
+                <span id="gradeBadge" class="text-xs px-2 py-0.5 rounded font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">A+</span>
+              </div>
+              <p id="scoreSummaryText" class="text-xs text-slate-400">All key tags optimized</p>
+            </div>
+          </div>
+          <button id="toggleAuditDetails" class="text-xs text-sky-400 hover:text-sky-300 flex items-center space-x-1">
+            <span>Details</span>
+            <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+
+        <!-- Audit Details List (expandable) -->
+        <div id="auditDetailsList" class="space-y-2 pt-2 border-t border-slate-800/80 text-xs hidden">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Editor Panel -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+        <!-- Editor Tabs -->
+        <div class="flex border-b border-slate-800 bg-slate-900/50 px-2 pt-2 space-x-1 overflow-x-auto text-xs">
+          <button class="editor-tab active px-3.5 py-2 font-medium rounded-t-lg transition border-b-2 border-sky-400 text-sky-400 bg-slate-800/50" data-tab="general">
+            General
+          </button>
+          <button class="editor-tab px-3.5 py-2 font-medium rounded-t-lg transition text-slate-400 hover:text-slate-200 border-b-2 border-transparent" data-tab="opengraph">
+            Open Graph
+          </button>
+          <button class="editor-tab px-3.5 py-2 font-medium rounded-t-lg transition text-slate-400 hover:text-slate-200 border-b-2 border-transparent" data-tab="twitter">
+            Twitter / X
+          </button>
+          <button class="editor-tab px-3.5 py-2 font-medium rounded-t-lg transition text-slate-400 hover:text-slate-200 border-b-2 border-transparent" data-tab="advanced">
+            Advanced
+          </button>
+        </div>
+
+        <form id="metaForm" class="p-5 space-y-4">
+
+          <!-- General Tab -->
+          <div id="tab-general" class="tab-content space-y-4">
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="text-xs font-semibold text-slate-300">Page Title</label>
+                <span id="titleCounter" class="text-[11px] text-slate-400 font-mono">0 / 60</span>
+              </div>
+              <input type="text" id="inputTitle" name="title" placeholder="Catchy, relevant page title..." class="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 transition" />
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="text-xs font-semibold text-slate-300">Meta Description</label>
+                <span id="descCounter" class="text-[11px] text-slate-400 font-mono">0 / 160</span>
+              </div>
+              <textarea id="inputDescription" name="description" rows="3" placeholder="Engaging summary of your page content..." class="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 transition resize-none"></textarea>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Canonical URL</label>
+              <input type="url" id="inputCanonical" name="canonical" placeholder="https://example.com/page" class="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 transition font-mono" />
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">Site Name</label>
+                <input type="text" id="inputSiteName" name="ogSiteName" placeholder="Brand / Site Name" class="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 transition" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">Theme Color</label>
+                <div class="flex items-center space-x-2">
+                  <input type="color" id="inputThemeColor" name="themeColor" value="#0ea5e9" class="w-8 h-8 rounded-lg bg-transparent border-0 cursor-pointer" />
+                  <input type="text" id="inputThemeColorText" value="#0ea5e9" class="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-sky-500" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Open Graph Tab -->
+          <div id="tab-opengraph" class="tab-content space-y-4 hidden">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">OG Image URL (1200x630)</label>
+              <input type="url" id="inputOgImage" name="ogImage" placeholder="https://example.com/banner.png" class="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 transition font-mono" />
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">OG Type</label>
+                <select id="inputOgType" name="ogType" class="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-sky-500">
+                  <option value="website">website</option>
+                  <option value="article">article</option>
+                  <option value="product">product</option>
+                  <option value="profile">profile</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">OG Locale</label>
+                <input type="text" id="inputOgLocale" name="ogLocale" value="en_US" class="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-sky-500 font-mono" />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">OG Image Alt</label>
+              <input type="text" id="inputOgImageAlt" name="ogImageAlt" placeholder="Descriptive banner text for accessibility" class="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 transition" />
+            </div>
+          </div>
+
+          <!-- Twitter Tab -->
+          <div id="tab-twitter" class="tab-content space-y-4 hidden">
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">Card Type</label>
+                <select id="inputTwitterCard" name="twitterCard" class="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-sky-500">
+                  <option value="summary_large_image">summary_large_image</option>
+                  <option value="summary">summary</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">Twitter Site / Handle</label>
+                <input type="text" id="inputTwitterSite" name="twitterSite" placeholder="@username" class="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 transition font-mono" />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Twitter Creator</label>
+              <input type="text" id="inputTwitterCreator" name="twitterCreator" placeholder="@creator_handle" class="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 transition font-mono" />
+            </div>
+          </div>
+
+          <!-- Advanced Tab -->
+          <div id="tab-advanced" class="tab-content space-y-4 hidden">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Author</label>
+              <input type="text" id="inputAuthor" name="author" placeholder="John Doe" class="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 transition" />
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Keywords</label>
+              <input type="text" id="inputKeywords" name="keywords" placeholder="react, devtools, social, og" class="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 transition" />
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Robots Directive</label>
+              <select id="inputRobots" name="robots" class="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-sky-500">
+                <option value="index, follow">index, follow (Standard Public)</option>
+                <option value="noindex, follow">noindex, follow (Hide from Search)</option>
+                <option value="noindex, nofollow">noindex, nofollow (Private)</option>
+              </select>
+            </div>
+          </div>
+
+        </form>
+      </div>
+
+    </div>
+
+    <!-- Right Column: Live Simulators & Code Generator (7 cols) -->
+    <div class="lg:col-span-7 space-y-6">
+
+      <!-- Preview Platforms Bar -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-2 shadow-sm">
+        <div class="flex items-center space-x-1 overflow-x-auto text-xs" id="platformTabs">
+          <button class="platform-tab active px-3.5 py-2 rounded-xl font-medium bg-sky-500 text-white flex items-center space-x-2 transition shadow-sm shadow-sky-500/20" data-platform="twitter">
+            <i data-lucide="twitter" class="w-3.5 h-3.5"></i>
+            <span>Twitter / X</span>
+          </button>
+          <button class="platform-tab px-3.5 py-2 rounded-xl font-medium text-slate-300 hover:bg-slate-800 flex items-center space-x-2 transition" data-platform="facebook">
+            <i data-lucide="facebook" class="w-3.5 h-3.5"></i>
+            <span>Facebook</span>
+          </button>
+          <button class="platform-tab px-3.5 py-2 rounded-xl font-medium text-slate-300 hover:bg-slate-800 flex items-center space-x-2 transition" data-platform="linkedin">
+            <i data-lucide="linkedin" class="w-3.5 h-3.5"></i>
+            <span>LinkedIn</span>
+          </button>
+          <button class="platform-tab px-3.5 py-2 rounded-xl font-medium text-slate-300 hover:bg-slate-800 flex items-center space-x-2 transition" data-platform="google">
+            <i data-lucide="search" class="w-3.5 h-3.5"></i>
+            <span>Google SERP</span>
+          </button>
+          <button class="platform-tab px-3.5 py-2 rounded-xl font-medium text-slate-300 hover:bg-slate-800 flex items-center space-x-2 transition" data-platform="discord">
+            <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
+            <span>Discord</span>
+          </button>
+          <button class="platform-tab px-3.5 py-2 rounded-xl font-medium text-slate-300 hover:bg-slate-800 flex items-center space-x-2 transition" data-platform="code">
+            <i data-lucide="code" class="w-3.5 h-3.5"></i>
+            <span>Code Export</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Simulator Stage Area -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-sm min-h-[460px] flex flex-col justify-center">
+
+        <!-- 1. Twitter / X Simulator -->
+        <div id="sim-twitter" class="sim-view max-w-xl mx-auto w-full">
+          <div class="bg-black border border-neutral-800 rounded-2xl p-4 text-white shadow-xl">
+            <!-- Author Header -->
+            <div class="flex items-center space-x-3 mb-3">
+              <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-sky-400 to-blue-600 flex items-center justify-center font-bold text-sm">
+                X
+              </div>
+              <div class="flex-1 leading-tight">
+                <div class="flex items-center space-x-1.5">
+                  <span class="font-bold text-sm">Developer</span>
+                  <svg class="w-4 h-4 text-sky-400" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                  <span class="text-neutral-500 text-xs" id="simTwitterHandle">@handle</span>
+                </div>
+                <span class="text-neutral-500 text-[11px]">Just shared a link</span>
+              </div>
+              <i data-lucide="more-horizontal" class="w-4 h-4 text-neutral-500"></i>
+            </div>
+
+            <!-- Tweet text -->
+            <p class="text-sm text-neutral-200 mb-3">Check out our latest update! Everything is live now 🚀</p>
+
+            <!-- Card Container -->
+            <div id="twitterCardBox" class="rounded-2xl border border-neutral-800 overflow-hidden bg-neutral-900/60 hover:bg-neutral-900 transition cursor-pointer">
+              <div id="twitterImageContainer" class="w-full aspect-[1.91/1] bg-neutral-800 relative overflow-hidden">
+                <img id="simTwitterImg" src="" alt="" class="w-full h-full object-cover" />
+                <div class="absolute bottom-2 left-2 bg-black/75 backdrop-blur px-2 py-0.5 rounded text-[10px] text-white font-mono flex items-center space-x-1">
+                  <i data-lucide="link" class="w-2.5 h-2.5"></i>
+                  <span id="simTwitterDomain">example.com</span>
+                </div>
+              </div>
+              <div class="p-3">
+                <h4 id="simTwitterTitle" class="font-bold text-sm text-white line-clamp-1 mb-1">Title goes here</h4>
+                <p id="simTwitterDesc" class="text-xs text-neutral-400 line-clamp-2">Description goes here</p>
+              </div>
+            </div>
+
+            <!-- Tweet Actions -->
+            <div class="flex items-center justify-between text-neutral-500 pt-3 px-2 text-xs">
+              <span class="flex items-center space-x-1.5"><i data-lucide="message-circle" class="w-4 h-4"></i><span>12</span></span>
+              <span class="flex items-center space-x-1.5"><i data-lucide="repeat" class="w-4 h-4"></i><span>4</span></span>
+              <span class="flex items-center space-x-1.5"><i data-lucide="heart" class="w-4 h-4"></i><span>88</span></span>
+              <span class="flex items-center space-x-1.5"><i data-lucide="bookmark" class="w-4 h-4"></i></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Facebook Simulator -->
+        <div id="sim-facebook" class="sim-view max-w-xl mx-auto w-full hidden">
+          <div class="bg-[#242526] border border-[#393a3b] rounded-xl overflow-hidden shadow-xl text-[#e4e6eb]">
+            <div class="p-3 flex items-center space-x-2.5">
+              <div class="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center font-bold text-white text-xs">f</div>
+              <div>
+                <h5 class="text-xs font-semibold text-[#e4e6eb]" id="simFbAuthor">Official Page</h5>
+                <p class="text-[10px] text-[#b0b3b8]">Sponsored · 🌐</p>
+              </div>
+            </div>
+            <p class="px-3 pb-3 text-xs text-[#e4e6eb]">Excited to unveil this! Click below to explore.</p>
+            <div class="border-t border-[#393a3b] bg-[#18191a] cursor-pointer">
+              <div class="w-full aspect-[1.91/1] bg-neutral-800 overflow-hidden">
+                <img id="simFbImg" src="" alt="" class="w-full h-full object-cover" />
+              </div>
+              <div class="p-3 bg-[#242526]">
+                <span id="simFbDomain" class="text-[10px] uppercase tracking-wider text-[#b0b3b8] block font-mono">EXAMPLE.COM</span>
+                <h4 id="simFbTitle" class="font-semibold text-xs text-[#e4e6eb] line-clamp-1 mt-0.5">Title</h4>
+                <p id="simFbDesc" class="text-[11px] text-[#b0b3b8] line-clamp-1 mt-0.5">Description</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. LinkedIn Simulator -->
+        <div id="sim-linkedin" class="sim-view max-w-xl mx-auto w-full hidden">
+          <div class="bg-[#1b1f23] border border-neutral-700 rounded-xl overflow-hidden shadow-xl text-white">
+            <div class="p-3 flex items-center space-x-2.5">
+              <div class="w-9 h-9 rounded-full bg-sky-700 flex items-center justify-center font-bold text-xs text-white">in</div>
+              <div>
+                <h5 class="text-xs font-semibold text-white">Mahdyar Monfared · 1st</h5>
+                <p class="text-[10px] text-neutral-400">Software Engineer & Frontend Architect</p>
+              </div>
+            </div>
+            <p class="px-3 pb-3 text-xs text-neutral-200">Delighted to share our new launch today with the community. Thoughts and feedback are welcome!</p>
+            <div class="border-t border-neutral-700 bg-neutral-900 cursor-pointer">
+              <div class="w-full aspect-[1.91/1] bg-neutral-800 overflow-hidden">
+                <img id="simLiImg" src="" alt="" class="w-full h-full object-cover" />
+              </div>
+              <div class="p-3 bg-[#1e2329]">
+                <h4 id="simLiTitle" class="font-semibold text-xs text-white line-clamp-1">Title</h4>
+                <span id="simLiDomain" class="text-[10px] text-neutral-400 block font-mono mt-0.5">example.com</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Google SERP Simulator -->
+        <div id="sim-google" class="sim-view max-w-xl mx-auto w-full hidden">
+          <div class="bg-[#202124] border border-[#303134] rounded-2xl p-5 text-[#bdc1c6] shadow-xl space-y-2">
+            <div class="flex items-center space-x-2 text-xs">
+              <div class="w-6 h-6 rounded-full bg-neutral-700 flex items-center justify-center text-[10px]" id="simGoogleFavicon">🌐</div>
+              <div class="leading-tight">
+                <span id="simGoogleSite" class="text-xs text-[#dadce0] font-medium block">Site Name</span>
+                <span id="simGoogleBreadcrumb" class="text-[11px] text-[#9aa0a6] font-mono block">https://example.com</span>
+              </div>
+            </div>
+            <h3 id="simGoogleTitle" class="text-base text-[#8ab4f8] hover:underline cursor-pointer font-medium leading-snug">
+              Page Title — Example
+            </h3>
+            <p id="simGoogleDesc" class="text-xs text-[#bdc1c6] leading-relaxed">
+              Meta description snippet will appear here on Google Search results.
+            </p>
+          </div>
+        </div>
+
+        <!-- 5. Discord Simulator -->
+        <div id="sim-discord" class="sim-view max-w-xl mx-auto w-full hidden">
+          <div class="bg-[#313338] rounded-xl p-4 shadow-xl text-white">
+            <div class="flex items-center space-x-2.5 mb-2">
+              <div class="w-8 h-8 rounded-full bg-[#5865f2] flex items-center justify-center font-bold text-xs">D</div>
+              <div class="flex items-center space-x-2">
+                <span class="font-bold text-xs text-white">BotMaster</span>
+                <span class="text-[10px] bg-[#5865f2] px-1 rounded text-white font-medium">BOT</span>
+                <span class="text-[10px] text-neutral-400">Today at 12:00 PM</span>
+              </div>
+            </div>
+            <!-- Embed box -->
+            <div class="border-l-4 border-sky-500 bg-[#2b2d31] rounded-r-lg p-3 space-y-2">
+              <span id="simDiscordSite" class="text-[10px] text-neutral-400 font-medium block">Site Name</span>
+              <h4 id="simDiscordTitle" class="font-bold text-xs text-sky-400 hover:underline cursor-pointer">Title</h4>
+              <p id="simDiscordDesc" class="text-xs text-[#dbdee1] leading-relaxed">Description goes here</p>
+              <div class="rounded-lg overflow-hidden max-h-48 bg-neutral-800">
+                <img id="simDiscordImg" src="" alt="" class="w-full h-full object-cover" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. Code Export Center -->
+        <div id="sim-code" class="sim-view w-full hidden space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div class="flex items-center space-x-1 bg-slate-800/80 p-1 rounded-xl text-xs">
+              <button class="code-tab active px-3 py-1.5 rounded-lg bg-sky-500 text-white font-medium" data-lang="html">HTML</button>
+              <button class="code-tab px-3 py-1.5 rounded-lg text-slate-400 hover:text-white font-medium" data-lang="nextjs">Next.js</button>
+              <button class="code-tab px-3 py-1.5 rounded-lg text-slate-400 hover:text-white font-medium" data-lang="nuxt">Nuxt 3</button>
+              <button class="code-tab px-3 py-1.5 rounded-lg text-slate-400 hover:text-white font-medium" data-lang="jsonld">JSON-LD</button>
+            </div>
+            <div class="flex items-center space-x-2">
+              <button id="copyCodeBtn" class="flex items-center space-x-1.5 text-xs bg-slate-800 hover:bg-slate-700 text-sky-400 px-3 py-1.5 rounded-xl border border-slate-700 transition">
+                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                <span id="copyCodeText">Copy Snippet</span>
+              </button>
+              <button id="downloadHtmlBtn" class="flex items-center space-x-1.5 text-xs bg-sky-500 hover:bg-sky-400 text-white px-3 py-1.5 rounded-xl transition shadow-sm shadow-sky-500/20">
+                <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                <span>Download</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Code Box -->
+          <div class="relative">
+            <pre class="bg-slate-950 border border-slate-800/80 rounded-xl p-4 font-mono text-xs text-sky-300 overflow-x-auto max-h-[380px] leading-relaxed"><code id="codeOutput"></code></pre>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800/80 bg-slate-900/40 py-4 text-center text-xs text-slate-500">
+    <p>MetaCraft — 30 Repos in 30 Days Challenge (Day 18) · Crafted by Mahdyar Monfared</p>
+  </footer>
+
+  <!-- Toast Message -->
+  <div id="toast" class="fixed bottom-6 right-6 bg-slate-800 border border-slate-700 text-white px-4 py-2.5 rounded-xl text-xs shadow-2xl flex items-center space-x-2 transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+    <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
+    <span id="toastMsg">Snippet copied to clipboard!</span>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

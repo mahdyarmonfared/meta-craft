@@ -1,0 +1,42 @@
+{
+  "name": "meta-craft",
+  "version": "1.0.0",
+  "description": "Zero-dependency social share preview studio (Twitter, Facebook, LinkedIn, Google SERP, Discord) & meta tag generator.",
+  "type": "module",
+  "main": "src/index.js",
+  "bin": {
+    "meta-craft": "./bin/meta-craft.js"
+  },
+  "scripts": {
+    "start": "node ./bin/meta-craft.js ui",
+    "ui": "node ./bin/meta-craft.js ui",
+    "test": "node --test test/*.test.js",
+    "inspect": "node ./bin/meta-craft.js inspect",
+    "generate": "node ./bin/meta-craft.js generate"
+  },
+  "keywords": [
+    "open-graph",
+    "twitter-cards",
+    "meta-tags",
+    "seo",
+    "social-preview",
+    "developer-tools",
+    "cli",
+    "nodejs",
+    "serp-preview",
+    "discord-embed"
+  ],
+  "author": "Mahdyar Monfared <mahdyar.monfared09@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mahdyarmonfared/meta-craft.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mahdyarmonfared/meta-craft/issues"
+  },
+  "homepage": "https://github.com/mahdyarmonfared/meta-craft#readme",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
